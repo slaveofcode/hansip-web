@@ -1,25 +1,24 @@
 import { createApp } from 'vue'
-import { createRouter, createWebHashHistory } from 'vue-router'
+import VueCookies from  'vue3-cookies'
+import router from './router';
+import axios from './plugins/axios'
+import store from './stores'
+
 import './index.css'
 
 import App from './App.vue'
-import Home from './components/Home.vue'
-import CreateAccount from './components/CreateAccount.vue'
-import FileShare from './components/FileShare.vue'
-
-const routes = [
-    { path: '/', component: Home, name: 'home' },
-    { path: '/new-account', component: CreateAccount, name: 'create-account' },
-    { path: '/file-share', component: FileShare, name: 'file-share' }
-]
-
-const router = createRouter({
-    history: createWebHashHistory(),
-    routes,
-})
 
 const app = createApp(App)
 
 app.use(router)
+app.use(axios)
+app.use(store)
+app.use(VueCookies, {
+    expireTimes: "30d",
+    path: '/',
+    domain: '',
+    secure: false, // TODO: true on prod
+    sameSite: 'None'
+})
 
 app.mount('#app')
