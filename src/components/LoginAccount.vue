@@ -1,26 +1,31 @@
 <script lang="ts" setup>
 import { ref } from "@vue/reactivity";
-import { useAuth } from "@websanova/vue-auth";
+import { useRouter } from 'vue-router';
+import { useStore as getAccountStore } from '../stores/account'
 
-const auth = useAuth()
-
-const submitForm = () => {
-    console.log('submitted', email.value, password.value, cpassword.value);
-    auth.login({
-        data: {
-            email: 'hello@example.com',
-            password: 'abcd1234'
-        },
-        redirect: {name: 'home'},
-        remember: '{"name": "Default"}',
-        staySignedIn: true,
-        fetchUser: true
-    });
-}
+const accountStore = getAccountStore()
+const router = useRouter()
 
 const email = ref()
 const password = ref();
-const cpassword = ref();
+
+const submitForm = async () => {
+    const res = await accountStore.login({
+        email: email.value,
+        password: password.value
+    })
+
+    if (!res) {
+        alert('Failed credential')
+        return
+    }
+
+    accountStore.reloadAuthStatus()
+
+    router.push({
+        name: 'home'
+    })
+}
 </script>
 
 <template>
