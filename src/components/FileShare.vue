@@ -15,19 +15,28 @@ const { uploadFiles } = createUploader('http://localhost:8080/upload')
 </script>
 
 <template>
-    <div class="flex flex-col">
+    <div class="flex flex-col w-full">
         <h1 class="text-3xl mb-3">File Sharing</h1>
         <DropZone class="drop-area" @files-dropped="addFiles" #default="{ dropZoneActive }">
             <label for="file-input">
-				<span v-if="dropZoneActive">
-					<span>Drop files...</span>
-				</span>
-				<span v-else>
-					<span>Drag Files Here</span>
-					<span class="smaller">
-						or <strong><em>click here</em></strong> to select files
-					</span>
-				</span>
+				<div v-if="dropZoneActive">
+					<span class="text-yellow-800" :class="{'block mt-32': !files.length}">You can drop the file(s) now...</span>
+				</div>
+				<div v-else>
+					<div v-if="files.length">
+						<span>Drag Files Here</span>
+						<span class="smaller">
+							or <strong><em>click here</em></strong> to select files
+						</span>
+					</div>
+					<div class="block mt-32" v-if="!files.length">
+						<span>Drag Files Here</span>
+						<span class="smaller">
+							or <strong><em>click here</em></strong> to select files
+						</span>
+					</div>
+					
+				</div>
 
 				<input type="file" id="file-input" multiple @change="onInputChange" />
 			</label>
@@ -45,7 +54,7 @@ const { uploadFiles } = createUploader('http://localhost:8080/upload')
 <style scoped lang="stylus">
 .drop-area {
 	width: 100%;
-	max-width: 800px;
+	min-height: 400px;
 	margin: 0 auto;
 	padding: 50px;
 	background: #ffffff55;
@@ -68,5 +77,12 @@ input[type=file]:not(:focus-visible) {
     clip: rect(0, 0, 0, 0) !important;
     white-space: nowrap !important;
     border: 0 !important;
+}
+
+.image-list {
+	@apply flex flex-row flex-wrap;
+	li {
+		
+	}
 }
 </style>
