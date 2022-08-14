@@ -20,7 +20,7 @@ const submitForm = async () => {
         return
     }
 
-    accountStore.reloadAuthStatus()
+    await accountStore.validateAuth()
 
     router.push({
         name: 'home'
@@ -30,13 +30,13 @@ const submitForm = async () => {
 
 <template>
   <div class="flex flex-col">
-    <h1 class="text-3xl">Login Account</h1>
-    <form @submit.prevent="submitForm()" class="flex flex-col justify-start items-start mt-3">
-        <label class="form-control">
+    <h1 class="text-3xl mb-3">Login Account</h1>
+    <form @submit.prevent="submitForm()" class="form flex flex-col justify-start items-start mt-3">
+        <label class="form-control textbox">
             <span>Email Address</span>
             <input type="email" v-model="email"/>
         </label>
-        <label class="form-control">
+        <label class="form-control textbox">
             <span>Password</span>
             <input type="password" v-model="password"/>
         </label>
@@ -47,14 +47,3 @@ const submitForm = async () => {
     </form>
   </div>
 </template>
-
-<style scoped>
-.form-control {
-    @apply flex flex-col items-start;
-    @apply mb-3;
-}
-
-.form-control > input {
-    @apply bg-white rounded-md text-2xl text-gray-800 px-2;
-}
-</style>

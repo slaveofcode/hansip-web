@@ -1,4 +1,5 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHashHistory, NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
+import { useStore as getAccountStore } from './stores/account'
 
 function loadView(path: string) {
     return () => import(/* @vite-ignore */path)
@@ -47,6 +48,29 @@ const routes = [
 const router = createRouter({
     history: createWebHashHistory(),
     routes,
+})
+
+let accountStore: any
+
+router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
+    if (!accountStore) {
+        accountStore = getAccountStore()
+    }
+
+    const stillLoggedIn = await accountStore.validateAuth()
+    if (!stillLoggedIn) {
+        accountStore.logout()
+    }
+
+    if (to.meta && to.meta.auth) {
+        if (!stillLoggedIn) {
+            return next({
+                name: 'home'
+            })
+        }
+    }
+
+    return next()
 })
 
 export default (app: any) => {

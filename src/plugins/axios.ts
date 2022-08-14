@@ -1,20 +1,21 @@
 import axios from "axios";
 import { useCookies } from "vue3-cookies";
 import { memoizeRefreshToken } from "../lib/auth/refresh_token";
+import { setToken } from "../lib/auth/token";
 
 const { cookies } = useCookies();
 
 axios.defaults.baseURL = "http://localhost:8080"; // TODO: change on prod
-axios.defaults.validateStatus = () => true;
+axios.defaults.validateStatus = (status) => status != 401;
 
 axios.interceptors.request.use(
   async (config) => {
-    const session = JSON.parse(cookies.get('access_token'));
+    const accessToken = cookies.get('access_token');
 
-    if (session?.accessToken) {
+    if (accessToken) {
       config.headers = {
         ...config.headers,
-        authorization: `Bearer ${session?.accessToken}`,
+        authorization: `Bearer ${accessToken}`,
       };
     }
 
@@ -46,6 +47,7 @@ axios.interceptors.response.use(
 
       return axios(config);
     }
+    
     return Promise.reject(error);
   }
 );

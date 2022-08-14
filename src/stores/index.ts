@@ -6,7 +6,7 @@ export default (app: any) => {
 
     // initial setup login state
     const accountStore = getAccountStore(pinia)
-    accountStore.reloadAuthStatus()
+    accountStore.validateAuth()
 
     app.use(pinia)
 }

@@ -10,9 +10,9 @@ import App from './App.vue'
 
 const app = createApp(App)
 
-app.use(router)
 app.use(axios)
 app.use(store)
+app.use(router)
 app.use(VueCookies, {
     expireTimes: "30d",
     path: '/',

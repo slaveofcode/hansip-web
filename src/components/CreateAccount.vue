@@ -44,32 +44,30 @@ const submitForm = async () => {
 
     alert('Failed register account!')
 }
-
-
 </script>
 
 <template>
   <div class="flex flex-col">
-    <h1 class="text-3xl">Create Account</h1>
-    <form @submit.prevent="submitForm()" class="flex flex-col justify-start items-start mt-3">
-        <label class="form-control">
+    <h1 class="text-3xl mb-3">Create Account</h1>
+    <form @submit.prevent="submitForm()" class="form flex flex-col justify-start items-start mt-3">
+        <label class="form-control textbox">
             <span>Name</span>
             <input type="name" v-model="name"/>
         </label>
-        <label class="form-control">
+        <label class="form-control textbox">
             <span>My Alias</span>
             <input type="alias" v-model="alias"/>
         </label>
-        <div class="block  border-b border-indigo-600 w-full my-3"></div>
-        <label class="form-control">
+        <div class="block border-0 border-b border-indigo-500 w-full my-3"></div>
+        <label class="form-control textbox">
             <span>Email Address</span>
             <input type="email" v-model="email"/>
         </label>
-        <label class="form-control">
+        <label class="form-control textbox">
             <span>Password</span>
             <input type="password" v-model="password"/>
         </label>
-        <label class="form-control">
+        <label class="form-control textbox">
             <span>Password Confirmation</span>
             <input type="password" v-model="cpassword"/>
         </label>
@@ -80,14 +78,3 @@ const submitForm = async () => {
     </form>
   </div>
 </template>
-
-<style scoped>
-.form-control {
-    @apply flex flex-col items-start;
-    @apply mb-3;
-}
-
-.form-control > input {
-    @apply bg-white rounded-md text-2xl text-gray-800 px-2;
-}
-</style>

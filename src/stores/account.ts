@@ -1,8 +1,7 @@
-
 import { defineStore } from 'pinia'
 import axios from 'axios'
 import { useCookies } from 'vue3-cookies'
-import { clearToken, setToken } from '../lib/auth/token';
+import { clearToken, getToken, setToken } from '../lib/auth/token';
 
 const { cookies } = useCookies()
 
@@ -62,12 +61,27 @@ export const useStore = defineStore('account', {
 
             return false
         },
-        reloadAuthStatus() {
-            this.isLoggedIn = Boolean(cookies.get('access_token'))
+        async validateAuth() {
+            const token = getToken()
+            if (!token) {
+                this.isLoggedIn = false
+                return this.isLoggedIn
+            }
+
+            const res = await axios.get('/auth/check')
+            if (res.status != 200) {
+                this.isLoggedIn = false
+                return this.isLoggedIn
+            }
+
+            this.isLoggedIn = true
+            return this.isLoggedIn
+        },
+        getToken() {
+            return getToken()
         },
         logout() {
             clearToken()
-            this.reloadAuthStatus()
         }
     },
 })

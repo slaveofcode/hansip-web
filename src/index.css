@@ -63,6 +63,34 @@ body {
   @apply bg-orange-700 border-orange-800;
 }
 
+.btn-disable {
+  @apply bg-gray-500 border-gray-800 text-white cursor-default;
+}
+
+form.form {
+  min-width: 300px;
+}
+
+.form-control {
+  @apply flex mb-3 w-full;
+}
+
+.form-control.textbox {
+  @apply flex-col items-start;
+}
+
+.form-control.checkbox {
+  @apply flex-row justify-start items-center cursor-pointer;
+}
+
+.form-control.checkbox > span {
+  @apply text-sm text-gray-600;
+}
+
+.form-control.textbox > input {
+  @apply bg-white rounded-md text-lg text-gray-800 px-4 py-2 border border-blue-500 w-full;
+}
+
 /* @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

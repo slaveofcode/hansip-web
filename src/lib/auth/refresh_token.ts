@@ -8,11 +8,11 @@ export const refreshToken = async (token: string) => {
     token,
   });
 
-  if (res.status === 201) {
+  if (res.status === 200 && res.data.data) {
     cookies.remove('access_token')
     cookies.remove('refresh_token')
 
-    const { accessToken, refreshToken, exp, expRefresh } = res.data;
+    const { accessToken, refreshToken, exp, expRefresh } = res.data.data;
     cookies.set('access_token', accessToken, new Date(exp))
     cookies.set('refresh_token', refreshToken, new Date(expRefresh))
 
