@@ -8,7 +8,7 @@ import useFileList from '../compositions/file-list'
 import createUploader from '../compositions/file-uploader'
 import Modal from '../components/Modal.vue'
 
-const { files, addFiles, removeFile } = useFileList()
+const { files, addFiles, removeFile, resetFiles } = useFileList()
 const data = reactive({
 	showModalConfirm: false,
 	showModalResult: false,
@@ -108,6 +108,7 @@ const submitFileGroupForm = async () => {
 		
 		downloadURL.value = downloadUrl
 		showModalResult.value = true
+		resetFiles()
 		return
 	}
 

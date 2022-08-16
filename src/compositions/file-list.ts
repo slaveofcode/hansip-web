@@ -20,7 +20,14 @@ export default function () {
 		if (index > -1) files.value.splice(index, 1)
 	}
 
-	return { files, addFiles, removeFile }
+	function resetFiles() {
+		console.info(files.value)
+		for (let i = (files.value.length-1); i >= 0 ; i--) {
+			removeFile(files.value[i])
+		}
+	}
+
+	return { files, addFiles, removeFile, resetFiles }
 }
 
 class UploadableFile {
