@@ -37,15 +37,17 @@ const close = () => {
     <div
         v-if="showModal"
         class="text-gray-700 fixed inset-0 w-full h-screen flex items-center justify-center bg-gray-500/75">
-        <div class="max-w-2xl bg-white shadow-lg rounded-lg p-8">
+        <div class="max-w-2xl bg-white shadow-lg rounded-lg py-5 px-9">
             <div class="relative bg-white">
                 <button
                     aria-label="close"
-                    class="absolute -top-4 right-0 text-xl text-gray-500"
+                    class="absolute -top-3 -right-5 text-xl text-gray-500"
                     @click.prevent="close"
                 >×</button>
             </div>
-            <slot />
+            <div class="pt-2">
+                <slot />
+            </div>
         </div>
   </div>
 </template>

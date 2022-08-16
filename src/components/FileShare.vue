@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { reactive, ref, toRef, watchEffect } from 'vue'
-import { useStore as getFileStore, FileGroupParam } from '../stores/file'
+import { addDays, formatISO } from 'date-fns'
+import { useStore as getFileStore, FileGroupParam, BundleFileGroupParam } from '../stores/file'
 import DropZone from './DropZone.vue'
 import FilePreview from './FilePreview.vue'
 import useFileList from '../compositions/file-list'
@@ -10,18 +11,21 @@ import Modal from '../components/Modal.vue'
 const { files, addFiles, removeFile } = useFileList()
 const data = reactive({
 	showModalConfirm: false,
+	showModalResult: false,
+	downloadURL: null
 })
 
 const showModalConfirm = toRef(data, 'showModalConfirm')
+const showModalResult = toRef(data, 'showModalResult')
+const downloadURL = toRef(data, 'downloadURL')
 
 function onInputChange(e: any) {
 	addFiles(e.target.files)
 	e.target.value = null // reset so that selecting the same file again will still cause it to fire this change
 }
 
-const syncShowModalConfirmClosed = () => {
-	showModalConfirm.value = false
-}
+const syncShowModalConfirmClosed = () => showModalConfirm.value = false
+const syncShowModalResultClosed = () => showModalResult.value = false
 
 const confirmUpload = () => {
 	showModalConfirm.value = true;
@@ -70,11 +74,6 @@ const submitFileGroupForm = async () => {
 	const fileStore = getFileStore()
 	const fileGroupParam: FileGroupParam = {
 		archiveType: 'ZIP',
-		passcode: zipPassword.value,
-	}
-
-	if (useProtectedView.value && downloadPass.value.length > MIN_LENGTH_PASS) {
-		fileGroupParam.downloadPassword = downloadPass.value
 	}
 
 	const fileGroupId = await fileStore.getFileGroupId(fileGroupParam)
@@ -90,9 +89,30 @@ const submitFileGroupForm = async () => {
 	for (const res of results) {
 		allOk = allOk && res.status === 201
 	}
-	
-	// hide form modal
-	// show modal success with link
+
+	const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+	const bundleParams: BundleFileGroupParam = {
+		fileGroupId,
+		passcode: zipPassword.value,
+		expiredAt: formatISO(addDays(new Date(), 30)),
+	}
+
+	if (useProtectedView.value && downloadPass.value.length > MIN_LENGTH_PASS) {
+		bundleParams.downloadPassword = downloadPass.value
+	}
+
+	const bundle = await fileStore.bundleFileGroup(bundleParams)
+	if (bundle) {
+		const { downloadUrl, expiredAt } = bundle
+		showModalConfirm.value = false
+		
+		downloadURL.value = downloadUrl
+		showModalResult.value = true
+		return
+	}
+
+	showModalConfirm.value = false
+	showModalResult.value = true
 }
 </script>
 
@@ -131,6 +151,15 @@ const submitFileGroupForm = async () => {
             <button :disabled="files.length <= 0"  @click.prevent="confirmUpload" class="block btn" :class="{'btn-orange': files.length > 0, 'btn-disable': files.length <= 0}">Upload</button>
         </div>
     </div>
+	<Modal :show="showModalResult" @on-modal-closed="syncShowModalResultClosed">
+		<div v-if="downloadURL">
+			File Uploaded
+			Download URL: {{ downloadURL }}
+		</div>
+		<div v-else>
+			Unable to process files
+		</div>
+	</Modal>
 	<Modal :show="showModalConfirm" @on-modal-closed="syncShowModalConfirmClosed">
 		<form @submit.prevent="submitFileGroupForm" class="flex flex-col justify-start items-start mt-3">
         <label class="form-control textbox">

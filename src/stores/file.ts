@@ -6,7 +6,12 @@ const { cookies } = useCookies()
 
 export interface FileGroupParam {
     archiveType: string
+}
+
+export interface BundleFileGroupParam {
+    fileGroupId: string
     passcode: string
+    expiredAt: string
     downloadPassword?: string
 }
 
@@ -21,5 +26,18 @@ export const useStore = defineStore('file', {
 
             return null
         },
+        async bundleFileGroup(params: BundleFileGroupParam) {
+            const res = await axios.post('/internal/files/bundle-group', params)
+            if (res.status === 201) {
+                const { data } = res.data
+                return {
+                    fgId: data.fgId,
+                    expiredAt: data.expiredAt,
+                    downloadUrl: data.downloadUrl
+                }
+            }
+
+            return false
+        }
     }
 })
