@@ -4,12 +4,23 @@ import { defineProps, ref, watch } from 'vue'
 const props = defineProps({
     show: {
         type: Boolean,
-        default: false
-    }
+        default: false,
+    },
+    noCloseButton: {
+        type: Boolean,
+        default: false,
+    },
 })
 
 const emits = defineEmits(['onModalClose', 'onModalClosed'])
 const showModal = ref(props.show)
+const hideCloseBtn = ref(props.noCloseButton)
+
+watch(() => props.show, (newVal) => {
+    if (newVal !== showModal.value) {
+        showModal.value = newVal 
+    }
+})
 
 watch(showModal, (newVal) => {
     if (newVal) {
@@ -18,18 +29,10 @@ watch(showModal, (newVal) => {
     document.querySelector('body')?.classList.remove('overflow-hidden');
 })
 
-watch(() => props.show, (newVal) => {
-    if (newVal !== showModal.value) {
-        showModal.value = newVal 
-    }
-})
-
 const close = () => {
     emits('onModalClose')
     showModal.value = false
     emits('onModalClosed')
-
-    console.info('show', showModal.value)
 }
 </script>
 
@@ -40,6 +43,7 @@ const close = () => {
         <div class="max-w-2xl bg-white shadow-lg rounded-lg py-5 px-9">
             <div class="relative bg-white">
                 <button
+                    v-if="!hideCloseBtn"
                     aria-label="close"
                     class="absolute -top-3 -right-5 text-xl text-gray-500"
                     @click.prevent="close"

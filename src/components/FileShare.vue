@@ -4,8 +4,8 @@ import { addDays, formatISO } from 'date-fns'
 import { useStore as getFileStore, FileGroupParam, BundleFileGroupParam } from '../stores/file'
 import DropZone from './DropZone.vue'
 import FilePreview from './FilePreview.vue'
-import useFileList from '../compositions/file-list'
-import createUploader from '../compositions/file-uploader'
+import useFileList from '../lib/file/file-list'
+import createUploader from '../lib/file/file-uploader'
 import Modal from '../components/Modal.vue'
 
 const { files, addFiles, removeFile, resetFiles } = useFileList()
@@ -97,7 +97,7 @@ const submitFileGroupForm = async () => {
 		expiredAt: formatISO(addDays(new Date(), 30)),
 	}
 
-	if (useProtectedView.value && downloadPass.value.length > MIN_LENGTH_PASS) {
+	if (useProtectedView.value) {
 		bundleParams.downloadPassword = downloadPass.value
 	}
 
@@ -105,7 +105,7 @@ const submitFileGroupForm = async () => {
 	if (bundle) {
 		const { downloadUrl, expiredAt } = bundle
 		showModalConfirm.value = false
-		
+
 		downloadURL.value = downloadUrl
 		showModalResult.value = true
 		resetFiles()
@@ -155,7 +155,7 @@ const submitFileGroupForm = async () => {
 	<Modal :show="showModalResult" @on-modal-closed="syncShowModalResultClosed">
 		<div v-if="downloadURL">
 			File Uploaded
-			Download URL: {{ downloadURL }}
+			Download URL: <a :href="downloadURL" target="_blank">{{ downloadURL }}</a>
 		</div>
 		<div v-else>
 			Unable to process files
@@ -163,33 +163,33 @@ const submitFileGroupForm = async () => {
 	</Modal>
 	<Modal :show="showModalConfirm" @on-modal-closed="syncShowModalConfirmClosed">
 		<form @submit.prevent="submitFileGroupForm" class="flex flex-col justify-start items-start mt-3">
-        <label class="form-control textbox">
-            <span>ZIP Password</span>
-            <input type="password" v-model="zipPassword" />
-        </label>
-        <label class="form-control textbox">
-            <span>Repeat ZIP Password</span>
-            <input type="password" v-model="cZipPassword"/>
-        </label>
-		<label class="form-control checkbox">
-			<input type="checkbox" v-model="useProtectedView" />
-			<span class="ml-2">Protect Download Page</span>
-		</label>
-		<div v-if="useProtectedView">
 			<label class="form-control textbox">
-				<span>Download Password</span>
-				<input type="password" v-model="downloadPass"/>
+				<span>ZIP Password</span>
+				<input type="password" v-model="zipPassword" />
 			</label>
 			<label class="form-control textbox">
-				<span>Repeat Password</span>
-				<input type="password" v-model="cdownloadPass"/>
+				<span>Repeat ZIP Password</span>
+				<input type="password" v-model="cZipPassword"/>
 			</label>
-		</div>
-        <div class="flex flex-row justify-between items-center w-full">
-            <button @click="showModalConfirm = false" class="block btn btn-blue">Cancel</button>
-            <button type="submit" class="block btn btn-orange">Start Upload</button>
-        </div>
-    </form>
+			<label class="form-control checkbox">
+				<input type="checkbox" v-model="useProtectedView" />
+				<span class="ml-2">Protect Download Page</span>
+			</label>
+			<div v-if="useProtectedView">
+				<label class="form-control textbox">
+					<span>Download Password</span>
+					<input type="password" v-model="downloadPass"/>
+				</label>
+				<label class="form-control textbox">
+					<span>Repeat Password</span>
+					<input type="password" v-model="cdownloadPass"/>
+				</label>
+			</div>
+			<div class="flex flex-row justify-between items-center w-full">
+				<button @click="showModalConfirm = false" class="block btn btn-blue">Cancel</button>
+				<button type="submit" class="block btn btn-orange">Start Upload</button>
+			</div>
+		</form>
 	</Modal>
 </template>
 

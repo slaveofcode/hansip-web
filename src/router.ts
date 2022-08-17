@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory, NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
+import { createRouter, createWebHashHistory, createWebHistory, NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
 import { useStore as getAccountStore } from './stores/account'
 
 function loadView(path: string) {
@@ -12,7 +12,7 @@ const routes = [
         component: loadView('./components/Home.vue'),
         meta: {
             auth: false,
-        }
+        },
     },
     {
         path: '/register',
@@ -20,7 +20,7 @@ const routes = [
         component: loadView('./components/CreateAccount.vue'),
         meta: {
             auth: false,
-        }
+        },
     },
     {
         path: '/login',
@@ -28,7 +28,7 @@ const routes = [
         component: loadView('./components/LoginAccount.vue'),
         meta: {
             auth: false,
-        }
+        },
     },
     {
         path: '/file-share',
@@ -36,7 +36,15 @@ const routes = [
         component: loadView('./components/FileShare.vue'),
         meta: {
             auth: true,
-        }
+        },
+    },
+    {
+        path: '/d/:code',
+        name:'file-download',
+        component: loadView('./components/FileDownload.vue'),
+        meta: {
+            auth: false
+        },
     },
     {
         path: '/error',
@@ -46,7 +54,7 @@ const routes = [
 ]
 
 const router = createRouter({
-    history: createWebHashHistory(),
+    history: createWebHistory(),
     routes,
 })
 

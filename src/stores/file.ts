@@ -38,6 +38,36 @@ export const useStore = defineStore('file', {
             }
 
             return false
+        },
+        async viewFiles(code: string): Promise<any | boolean> {
+            const res = await axios.get(`/view/${code}`)
+            if (res.status === 200) {
+                const { isProtected, data } = res.data
+                return {
+                    isProtected,
+                    files: data.files,
+                }
+            }
+
+            return false
+        },
+        async viewProtectedFiles(code: string, password: string): Promise<any | boolean>  {
+            const res = await axios.post(`/view/${code}`, {
+                password,
+            })
+            if (res.status === 200) {
+                const { data } = res.data
+                return {
+                    files: data.files,
+                }
+            }
+
+            return false
+        },
+        async downloadFiles(code: string, password: string) {
+            const res = await axios.post(`/download/${code}`, {
+                password,
+            }, { responseType: 'blob' })
         }
     }
 })

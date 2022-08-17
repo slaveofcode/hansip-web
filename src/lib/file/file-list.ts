@@ -21,7 +21,6 @@ export default function () {
 	}
 
 	function resetFiles() {
-		console.info(files.value)
 		for (let i = (files.value.length-1); i >= 0 ; i--) {
 			removeFile(files.value[i])
 		}
