@@ -55,6 +55,7 @@ export const useStore = defineStore('file', {
             const res = await axios.post(`/view/${code}`, {
                 password,
             })
+
             if (res.status === 200) {
                 const { data } = res.data
                 return {
@@ -64,10 +65,45 @@ export const useStore = defineStore('file', {
 
             return false
         },
-        async downloadFiles(code: string, password: string) {
+        async downloadFiles(code: string, password: string, checkOnly?: boolean) {
+            const params = {}
+            if (checkOnly) {
+                Object.assign(params, {
+                    check: true,
+                })
+            }
+
+
+            if (checkOnly) {
+                const res = await axios.post(`/download/${code}`, {
+                    password,
+                }, {
+                    params,
+                })
+
+                return res.status === 200
+            }
+
             const res = await axios.post(`/download/${code}`, {
                 password,
             }, { responseType: 'blob' })
+
+            let filename = 'files.zip'
+            if (res.headers['content-disposition'] && res.headers['content-disposition'].indexOf('attachment') !== -1) {
+                var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                var matches = filenameRegex.exec(res.headers['content-disposition']);
+                if (matches != null && matches[1]) { 
+                  filename = matches[1].replace(/['"]/g, '');
+                }
+            }
+            
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', filename); 
+            document.body.appendChild(link);
+
+            link.click();
         }
     }
 })

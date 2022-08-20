@@ -42,6 +42,11 @@ const showProtectedFiles = async () => {
 }
 
 const fetchFiles = async () => {
+    const exist = await fileStore.downloadFiles(code.value, downloadPass.value, true)
+    if (!exist) {
+        alert('File doesn\'t exist.')
+        return
+    }
     await fileStore.downloadFiles(code.value, downloadPass.value)
 }
 
