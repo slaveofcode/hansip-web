@@ -103,3 +103,21 @@ form.form {
     background-color: #f9f9f9;
   }
 } */
+
+/* autocomplete tag */
+
+.vue-tags-input {
+  @apply w-full !important;
+}
+.ti-input {
+  @apply bg-white rounded-md text-lg text-gray-800 border border-blue-500 !important;
+}
+.ti-new-tag-input {
+	@apply bg-white text-lg text-gray-800 ;
+}
+.ti-content {
+  @apply p-0 m-0 !important;
+}
+.ti-valid.ti-tag {
+  @apply bg-indigo-500 text-white px-3 py-2 mx-1 rounded-md !important;
+}

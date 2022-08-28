@@ -1,28 +1,30 @@
 <script lang="ts" setup>
-import { reactive, ref, toRef, watchEffect } from 'vue'
+import { computed, reactive, ref, toRef, watch, watchEffect } from 'vue'
 import { addDays, formatISO } from 'date-fns'
+import VueTagsInput from '@sipec/vue3-tags-input';
 import { useStore as getFileStore, FileGroupParam, BundleFileGroupParam } from '../stores/file'
+import { useStore as getUserStore } from '../stores/user'
 import DropZone from './DropZone.vue'
 import FilePreview from './FilePreview.vue'
 import useFileList from '../lib/file/file-list'
 import createUploader from '../lib/file/file-uploader'
 import Modal from '../components/Modal.vue'
 
+const fileStore = getFileStore()
+const userStore = getUserStore()
+
 const { files, addFiles, removeFile, resetFiles } = useFileList()
 const data = reactive({
 	showModalConfirm: false,
 	showModalResult: false,
-	downloadURL: null
+	downloadURL: null,
+	filteredUserContacts: [] as any[],
 })
 
 const showModalConfirm = toRef(data, 'showModalConfirm')
 const showModalResult = toRef(data, 'showModalResult')
 const downloadURL = toRef(data, 'downloadURL')
-
-function onInputChange(e: any) {
-	addFiles(e.target.files)
-	e.target.value = null // reset so that selecting the same file again will still cause it to fire this change
-}
+const filteredUserContacts = toRef(data, 'filteredUserContacts')
 
 const syncShowModalConfirmClosed = () => showModalConfirm.value = false
 const syncShowModalResultClosed = () => showModalResult.value = false
@@ -31,6 +33,13 @@ const confirmUpload = () => {
 	showModalConfirm.value = true;
 }
 
+function onInputChange(e: any) {
+	addFiles(e.target.files)
+	e.target.value = null // reset so that selecting the same file again will still cause it to fire this change
+}
+
+const userContacts = ref()
+const userContactTags = ref([] as any)
 const zipPassword = ref()
 const cZipPassword = ref()
 const downloadPass = ref()
@@ -71,7 +80,6 @@ const submitFileGroupForm = async () => {
 		}
 	}
 
-	const fileStore = getFileStore()
 	const fileGroupParam: FileGroupParam = {
 		archiveType: 'ZIP',
 	}
@@ -95,6 +103,7 @@ const submitFileGroupForm = async () => {
 		fileGroupId,
 		passcode: zipPassword.value,
 		expiredAt: formatISO(addDays(new Date(), 30)),
+		userIds: userContactTags.value.map((item: any) => item.id),
 	}
 
 	if (useProtectedView.value) {
@@ -115,6 +124,27 @@ const submitFileGroupForm = async () => {
 	showModalConfirm.value = false
 	showModalResult.value = true
 }
+
+let tagDebounce: any
+const watchTagInput = watch(userContacts, (newVal) => {
+	console.log('new search', newVal)
+
+	if (tagDebounce) {
+		clearTimeout(tagDebounce);
+	}
+
+	tagDebounce = setTimeout(() => {
+		userStore
+			.querySearch(newVal)
+			.then((success) => {
+				if(success) {
+					filteredUserContacts.value = userStore.querySearchResults.map(
+						(item) => ({ id: item.id, text: item.alias }),
+					)
+				}
+			})
+	}, 600);
+})
 </script>
 
 <template>
@@ -164,6 +194,18 @@ const submitFileGroupForm = async () => {
 	<Modal :show="showModalConfirm" @on-modal-closed="syncShowModalConfirmClosed">
 		<form @submit.prevent="submitFileGroupForm" class="flex flex-col justify-start items-start mt-3">
 			<label class="form-control textbox">
+				<span>Share to Users</span>
+				<VueTagsInput
+					v-model="userContacts"
+					:tags="userContactTags"
+					:autocomplete-items="filteredUserContacts"
+					:add-only-from-autocomplete="true"
+					@tags-changed="tags => userContactTags = tags"
+					placeholder="find user..."
+				/>
+			</label>
+			<hr/>
+			<label class="form-control textbox">
 				<span>ZIP Password</span>
 				<input type="password" v-model="zipPassword" />
 			</label>
@@ -175,7 +217,7 @@ const submitFileGroupForm = async () => {
 				<input type="checkbox" v-model="useProtectedView" />
 				<span class="ml-2">Protect Download Page</span>
 			</label>
-			<div v-if="useProtectedView">
+			<div v-if="useProtectedView" class="w-full">
 				<label class="form-control textbox">
 					<span>Download Password</span>
 					<input type="password" v-model="downloadPass"/>
@@ -227,4 +269,5 @@ input[type=file]:not(:focus-visible) {
 		
 	}
 }
+
 </style>

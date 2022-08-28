@@ -13,6 +13,7 @@ export interface BundleFileGroupParam {
     passcode: string
     expiredAt: string
     downloadPassword?: string
+    userIds?: string[]
 }
 
 export const useStore = defineStore('file', {

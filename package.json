@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@sipec/vue3-tags-input": "^3.0.4",
     "axios": "^0.27.2",
     "date-fns": "^2.29.1",
     "mem": "^9.0.2",
