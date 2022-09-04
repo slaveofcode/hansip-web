@@ -45,10 +45,9 @@ defineEmits(['remove'])
 	.close-icon {
 		width: var(--size);
 		font-size: var(--size);
-		background: #933;
-		color: #fff;
 		top: 0.25rem;
 		cursor: pointer;
+		@apply bg-red-500 text-white;
 	}
 	.status-indicator {
 		font-size: calc(0.75 * var(--size));

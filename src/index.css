@@ -72,7 +72,11 @@ form.form {
 }
 
 .form-control {
-  @apply flex mb-3 w-full;
+  @apply flex mb-3 mt-1 w-full;
+}
+
+.form-control > .label {
+  @apply mb-2;
 }
 
 .form-control.textbox {
