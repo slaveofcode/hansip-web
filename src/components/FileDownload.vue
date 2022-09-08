@@ -2,12 +2,19 @@
 import { reactive, ref, toRef } from '@vue/reactivity'
 import { useRoute, useRouter } from 'vue-router'
 import { useStore as getFileStore } from '../stores/file'
+import { useStore as getAccountStore } from '../stores/account'
 import Modal from '../components/Modal.vue'
 import { onBeforeMount } from '@vue/runtime-core'
 
 const route = useRoute()
 const router = useRouter()
 const fileStore = getFileStore()
+const accountStore = getAccountStore()
+
+if (!accountStore.isAuthenticated) {
+    accountStore.validateAuth()
+}
+
 const data = reactive({
     code: (route.params.code) as string,
     files: [],
@@ -16,6 +23,7 @@ const data = reactive({
 const code = toRef(data, 'code')
 const files = toRef(data, 'files')
 const showModalPrompt = ref(false)
+const needLoginPassword = ref(false)
 
 onBeforeMount(async () => {
     const res = await fileStore.viewFiles(code.value)
@@ -23,15 +31,29 @@ onBeforeMount(async () => {
         router.push({ name: 'error' })
     }
 
+    if (res.isNeedLogin && !accountStore.isAuthenticated) {
+        router.push({
+            name: 'login-account',
+            query: {
+                url: route.fullPath,
+            },
+        })
+    }
+
     showModalPrompt.value = res.isProtected
+    needLoginPassword.value = res.isNeedLogin
     if (!res.isProtected) {
         files.value = res.files
     }
 })
 
 const downloadPass = ref()
+const accountPass = ref()
 const showProtectedFiles = async () => {
-    const res = await fileStore.viewProtectedFiles(code.value, downloadPass.value)
+    const res = await fileStore.viewProtectedFiles(code.value, {
+        pagePassword: downloadPass.value,
+        accountPassword: accountPass.value,
+    })
     if (!res) {
         alert('Wrong password, try again.')
         return
@@ -42,22 +64,11 @@ const showProtectedFiles = async () => {
 }
 
 const fetchFiles = async () => {
-    const exist = await fileStore.downloadFiles(code.value, downloadPass.value, true)
-    if (!exist) {
-        alert('File doesn\'t exist.')
-        return
-    }
-    await fileStore.downloadFiles(code.value, downloadPass.value)
+    await fileStore.downloadFiles(code.value, {
+        pagePassword: downloadPass.value,
+        accountPassword: accountPass.value,
+    })
 }
-
-// fetch info by code
-  // has download password ?
-    // prompt pass
-    // keep pass locally for download
-// display
-// handle download
-  // has download password ?
-     // show prompt password
 </script>
 
 <template>
@@ -78,8 +89,12 @@ const fetchFiles = async () => {
     <Modal :show="showModalPrompt" :no-close-button="true">
 		<form @submit.prevent="showProtectedFiles" class="flex flex-col justify-start items-start mt-3">
 			<label class="form-control textbox">
-                <span>Download Password</span>
+                <span>Download Page Password</span>
                 <input type="password" v-model="downloadPass"/>
+            </label>
+            <label class="form-control textbox">
+                <span>Your Account Password</span>
+                <input type="password" v-model="accountPass"/>
             </label>
 			<div class="flex flex-row justify-end items-center w-full">
 				<button type="submit" class="block btn btn-orange">Show File</button>

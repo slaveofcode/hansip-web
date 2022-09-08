@@ -1,9 +1,10 @@
 <script lang="ts" setup>
 import { ref } from "@vue/reactivity";
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useStore as getAccountStore } from '../stores/account'
 
 const accountStore = getAccountStore()
+const route = useRoute()
 const router = useRouter()
 
 const email = ref()
@@ -21,6 +22,17 @@ const submitForm = async () => {
     }
 
     await accountStore.validateAuth()
+
+    if (route.query.url) {
+        router.push({
+            path: route.query.url as string,
+        }).catch(() => {
+            router.push({
+                name: 'home'
+            })
+        })
+        return
+    }
 
     router.push({
         name: 'home'

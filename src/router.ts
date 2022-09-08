@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory, createWebHistory, NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
+import { createRouter, createWebHistory, NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
 import { useStore as getAccountStore } from './stores/account'
 
 function loadView(path: string) {

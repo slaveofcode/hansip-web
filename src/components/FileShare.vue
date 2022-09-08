@@ -1,28 +1,30 @@
 <script lang="ts" setup>
-import { reactive, ref, toRef, watchEffect } from 'vue'
+import { computed, reactive, ref, toRef, watch, watchEffect } from 'vue'
 import { addDays, formatISO } from 'date-fns'
+import VueTagsInput from '@sipec/vue3-tags-input';
 import { useStore as getFileStore, FileGroupParam, BundleFileGroupParam } from '../stores/file'
+import { useStore as getUserStore } from '../stores/user'
 import DropZone from './DropZone.vue'
 import FilePreview from './FilePreview.vue'
 import useFileList from '../lib/file/file-list'
 import createUploader from '../lib/file/file-uploader'
 import Modal from '../components/Modal.vue'
 
+const fileStore = getFileStore()
+const userStore = getUserStore()
+
 const { files, addFiles, removeFile, resetFiles } = useFileList()
 const data = reactive({
 	showModalConfirm: false,
 	showModalResult: false,
-	downloadURL: null
+	downloadURL: null,
+	filteredUserContacts: [] as any[],
 })
 
 const showModalConfirm = toRef(data, 'showModalConfirm')
 const showModalResult = toRef(data, 'showModalResult')
 const downloadURL = toRef(data, 'downloadURL')
-
-function onInputChange(e: any) {
-	addFiles(e.target.files)
-	e.target.value = null // reset so that selecting the same file again will still cause it to fire this change
-}
+const filteredUserContacts = toRef(data, 'filteredUserContacts')
 
 const syncShowModalConfirmClosed = () => showModalConfirm.value = false
 const syncShowModalResultClosed = () => showModalResult.value = false
@@ -31,6 +33,16 @@ const confirmUpload = () => {
 	showModalConfirm.value = true;
 }
 
+function onInputChange(e: any) {
+	addFiles(e.target.files)
+	e.target.value = null // reset so that selecting the same file again will still cause it to fire this change
+}
+
+const tabShare = ref(true)
+const tabSecurity = ref(false)
+
+const userContacts = ref()
+const userContactTags = ref([] as any)
 const zipPassword = ref()
 const cZipPassword = ref()
 const downloadPass = ref()
@@ -71,7 +83,6 @@ const submitFileGroupForm = async () => {
 		}
 	}
 
-	const fileStore = getFileStore()
 	const fileGroupParam: FileGroupParam = {
 		archiveType: 'ZIP',
 	}
@@ -95,6 +106,7 @@ const submitFileGroupForm = async () => {
 		fileGroupId,
 		passcode: zipPassword.value,
 		expiredAt: formatISO(addDays(new Date(), 30)),
+		userIds: userContactTags.value.map((item: any) => item.id),
 	}
 
 	if (useProtectedView.value) {
@@ -115,6 +127,27 @@ const submitFileGroupForm = async () => {
 	showModalConfirm.value = false
 	showModalResult.value = true
 }
+
+let tagDebounce: any
+const watchTagInput = watch(userContacts, (newVal) => {
+	console.log('new search', newVal)
+
+	if (tagDebounce) {
+		clearTimeout(tagDebounce);
+	}
+
+	tagDebounce = setTimeout(() => {
+		userStore
+			.querySearch(newVal)
+			.then((success) => {
+				if(success) {
+					filteredUserContacts.value = userStore.querySearchResults.map(
+						(item) => ({ id: item.id, text: item.alias, object: item }),
+					)
+				}
+			})
+	}, 600);
+})
 </script>
 
 <template>
@@ -162,32 +195,62 @@ const submitFileGroupForm = async () => {
 		</div>
 	</Modal>
 	<Modal :show="showModalConfirm" @on-modal-closed="syncShowModalConfirmClosed">
-		<form @submit.prevent="submitFileGroupForm" class="flex flex-col justify-start items-start mt-3">
-			<label class="form-control textbox">
-				<span>ZIP Password</span>
-				<input type="password" v-model="zipPassword" />
-			</label>
-			<label class="form-control textbox">
-				<span>Repeat ZIP Password</span>
-				<input type="password" v-model="cZipPassword"/>
-			</label>
-			<label class="form-control checkbox">
-				<input type="checkbox" v-model="useProtectedView" />
-				<span class="ml-2">Protect Download Page</span>
-			</label>
-			<div v-if="useProtectedView">
+		<form @submit.prevent="submitFileGroupForm" class="form flex flex-col justify-start items-start mt-3">
+			<ul class="flex flex-row justify-evenly items-center w-full mb-3">
+				<li class="form-tab" :class="{'active': tabShare}" @click="tabShare = true;tabSecurity = false">Sharing To</li>
+				<li class="form-tab" :class="{'active': tabSecurity}" @click="tabShare = false;tabSecurity = true">Security</li>
+			</ul>
+			<div class="form-tab-content" :class="{'hidden': !tabShare}">
 				<label class="form-control textbox">
-					<span>Download Password</span>
-					<input type="password" v-model="downloadPass"/>
+					<span class="label">Type User to Share</span>
+					<VueTagsInput
+						v-model="userContacts"
+						:tags="userContactTags"
+						:autocomplete-items="filteredUserContacts"
+						:add-only-from-autocomplete="true"
+						@tags-changed="tags => userContactTags = tags"
+						placeholder="find user..."
+					/>
 				</label>
-				<label class="form-control textbox">
-					<span>Repeat Password</span>
-					<input type="password" v-model="cdownloadPass"/>
-				</label>
+				<div class="form-control">
+					<ul class="w-full">
+						<li class="flex flex-col justify-start items-start bg-blue-100 mb-1 p-2 rounded-md text-sm" v-for="item in userContactTags" :key="item.id">
+							<span class="text-orange-600">({{ item.object.alias }})</span>
+							<p>{{ item.object.name }}</p>
+						</li>
+					</ul>
+				</div>
+				<div class="flex flex-row justify-end items-center w-full">
+					<button type="button" class="block btn btn-blue" @click="tabShare = false;tabSecurity = true">Continue</button>
+				</div>
 			</div>
-			<div class="flex flex-row justify-between items-center w-full">
-				<button @click="showModalConfirm = false" class="block btn btn-blue">Cancel</button>
-				<button type="submit" class="block btn btn-orange">Start Upload</button>
+			<div class="form-tab-content" :class="{'hidden': !tabSecurity}">
+				<label class="form-control textbox">
+					<span class="label">ZIP Password</span>
+					<input type="password" v-model="zipPassword" />
+				</label>
+				<label class="form-control textbox">
+					<span class="label">Repeat ZIP Password</span>
+					<input type="password" v-model="cZipPassword"/>
+				</label>
+				<label class="form-control checkbox">
+					<input type="checkbox" v-model="useProtectedView" />
+					<span class="ml-2">Protect Download Page</span>
+				</label>
+				<div v-if="useProtectedView" class="w-full">
+					<label class="form-control textbox">
+						<span class="label">Download Password</span>
+						<input type="password" v-model="downloadPass"/>
+					</label>
+					<label class="form-control textbox">
+						<span class="label">Repeat Password</span>
+						<input type="password" v-model="cdownloadPass"/>
+					</label>
+				</div>
+				<div class="flex flex-row justify-between items-center w-full">
+					<button @click="tabShare = true;tabSecurity = false" type="button" class="block btn btn-blue">Back</button>
+					<button type="submit" class="block btn btn-orange">Start Upload</button>
+				</div>
 			</div>
 		</form>
 	</Modal>
@@ -226,5 +289,26 @@ input[type=file]:not(:focus-visible) {
 	li {
 		
 	}
+}
+
+.form {
+	min-width: 17rem;
+	max-width: 20rem;
+}
+
+.form-tab {
+	@apply flex-grow cursor-pointer border-b-4 text-gray-500 bg-gray-300 border-gray-500 py-2 px-2 transition-all ease-in delay-100;
+
+	&.active, &:hover {
+		@apply border-blue-500 bg-white text-gray-800;
+	}
+
+	&:hover {
+		@apply border-gray-500;
+	}
+}
+
+.form-tab-content {
+	@apply w-full;
 }
 </style>

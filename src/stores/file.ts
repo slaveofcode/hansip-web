@@ -13,6 +13,12 @@ export interface BundleFileGroupParam {
     passcode: string
     expiredAt: string
     downloadPassword?: string
+    userIds?: string[]
+}
+
+export interface DownloadProtectedParam {
+    accountPassword?: string
+    pagePassword?: string
 }
 
 export const useStore = defineStore('file', {
@@ -42,18 +48,20 @@ export const useStore = defineStore('file', {
         async viewFiles(code: string): Promise<any | boolean> {
             const res = await axios.get(`/view/${code}`)
             if (res.status === 200) {
-                const { isProtected, data } = res.data
+                const { isProtected, isNeedLogin, data } = res.data
                 return {
                     isProtected,
+                    isNeedLogin,
                     files: data.files,
                 }
             }
 
             return false
         },
-        async viewProtectedFiles(code: string, password: string): Promise<any | boolean>  {
+        async viewProtectedFiles(code: string, params: DownloadProtectedParam): Promise<any | boolean>  {
             const res = await axios.post(`/view/${code}`, {
-                password,
+                downloadPassword: params.pagePassword,
+                accountPassword: params.accountPassword
             })
 
             if (res.status === 200) {
@@ -65,27 +73,21 @@ export const useStore = defineStore('file', {
 
             return false
         },
-        async downloadFiles(code: string, password: string, checkOnly?: boolean) {
-            const params = {}
-            if (checkOnly) {
-                Object.assign(params, {
-                    check: true,
-                })
-            }
-
-
-            if (checkOnly) {
-                const res = await axios.post(`/download/${code}`, {
-                    password,
-                }, {
-                    params,
-                })
-
-                return res.status === 200
-            }
-
-            const res = await axios.post(`/download/${code}`, {
+        async downloadInfo(code: string, password: string): Promise<[boolean, any]> {
+            const res = await axios.post(`/download/info/${code}`, {
                 password,
+            })
+
+            if (res.status === 200) {
+                return [true, res.data]
+            }
+
+            return [false, null]
+        },
+        async downloadFiles(code: string, params: DownloadProtectedParam): Promise<[boolean, any] | undefined> {
+            const res = await axios.post(`/download/do/${code}`, {
+                downloadPassword: params.pagePassword,
+                accountPassword: params.accountPassword
             }, { responseType: 'blob' })
 
             let filename = 'files.zip'
@@ -104,6 +106,8 @@ export const useStore = defineStore('file', {
             document.body.appendChild(link);
 
             link.click();
+
+            return undefined;
         }
     }
 })
