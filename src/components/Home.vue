@@ -18,6 +18,9 @@ const logout = () => {
 
 <template>
   <div class="flex flex-col">
+    <div class="flex flex-row justify-center items-center mb-3">
+      <img src="/logo-256.png" class="w-40" />
+    </div>
     <h1 class="mb-3"><span class="text-green-500 font-bold">Hansip</span> File Sharing</h1>
     <div class="flex flex-row justify-center">
       <div v-if="!isAuthenticated">
