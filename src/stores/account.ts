@@ -31,10 +31,10 @@ export const useStore = defineStore('account', {
         async register(params: RegisterAccountParam) {
             const res = await axios.post('/auth/register', params)
             if (res.status === 201) {
-                return true
+                return [true, '']
             }
 
-            return false
+            return [false, res.data.message]
         },
         async login(params: LoginAccountParam) {
             const res = await axios.post('/auth/login', params)

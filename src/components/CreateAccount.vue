@@ -29,7 +29,7 @@ const submitForm = async () => {
         return
     }
 
-    const registered = await accountStore.register({
+    const [registered, msg] = await accountStore.register({
         name: name.value,
         alias: alias.value,
         email: email.value,
@@ -42,7 +42,7 @@ const submitForm = async () => {
         return
     }
 
-    alert('Failed register account!')
+    alert(msg)
 }
 </script>
 
