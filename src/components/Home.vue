@@ -18,7 +18,7 @@ const logout = () => {
 
 <template>
   <div class="flex flex-col">
-    <h1 class="mb-3"><span class="text-green-500 font-bold">Securi</span> File Sharing</h1>
+    <h1 class="mb-3"><span class="text-green-500 font-bold">Hansip</span> File Sharing</h1>
     <div class="flex flex-row justify-center">
       <div v-if="!isAuthenticated">
         <router-link :to="{name: 'create-account'}" class="mr-2 btn btn-blue">Create Account</router-link>
