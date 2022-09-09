@@ -1,8 +1,8 @@
 <template>
 	<component :is="tag" class="file-preview">
 		<button @click="$emit('remove', file)" class="close-icon">&times;</button>
-		<img :src="file.url" :alt="file.file.name" :title="file.file.name" class="rounded-xl bg-gray-200 p-2 text-gray-700" />
-
+		<img v-if="isSupportedExt(getExt(file.file.name))" :src="`/filetypes/${getExt(file.file.name)}-icon.png`" class="rounded-xl bg-gray-200 p-2 text-gray-700" />
+		<img v-else :src="file.url" :alt="file.file.name" :title="file.file.name" class="rounded-xl bg-gray-200 p-2 text-gray-700" />
 		<span class="status-indicator loading-indicator" v-show="file.status == 'loading'">In Progress</span>
 		<span class="status-indicator success-indicator" v-show="file.status == true">Uploaded</span>
 		<span class="status-indicator failure-indicator" v-show="file.status == false">Error</span>
@@ -15,6 +15,109 @@ defineProps({
 	tag: { type: String, default: 'li' },
 })
 defineEmits(['remove'])
+
+const isSupportedExt = (ext: string): boolean => {
+	return [
+	'ai',
+	'aif',
+	'ajax',
+	'api',
+	'apk',
+	'app',
+	'aspx',
+	'avi',
+	'avif',
+	'bak',
+	'bat',
+	'bin',
+	'bmp',
+	'c',
+	'++',
+	'cab',
+	'cad',
+	'cdr',
+	'cer',
+	'class',
+	'crx',
+	'cs',
+	'csr',
+	'css',
+	'csv',
+	'deb',
+	'dll',
+	'dmp',
+	'doc',
+	'docx',
+	'eps',
+	'exe',
+	'fla',
+	'gbr',
+	'ged',
+	// 'gif',
+	'gpx',
+	'html',
+	'icns',
+	'ico',
+	'ini',
+	'iso',
+	'jar',
+	'jpeg',
+	// 'jpg',
+	'js',
+	'json',
+	'jsp',
+	'kml',
+	'log',
+	'mid',
+	'mim',
+	'mov',
+	'mp3',
+	'mp4',
+	'mpeg',
+	'mpg',
+	'msi',
+	'obj',
+	'ods',
+	'odt',
+	'otf',
+	'part',
+	'pdf',
+	'php',
+	'pkg',
+	'pl',
+	// 'png',
+	'ppt',
+	'prf',
+	'psd',
+	'rar',
+	'rpm',
+	'rss',
+	'rtf',
+	'sdk',
+	'sql',
+	'svg',
+	'swift',
+	'tiff',
+	'tmp',
+	'ttf',
+	'txt',
+	'vb',
+	'vcf',
+	'vsd',
+	'wav',
+	// 'webp',
+	'wmv',
+	'wsf',
+	'xls',
+	'xlsx',
+	'yaml',
+	'zip',
+	].includes(ext)
+}
+
+const getExt = (file: string): string => {
+	return file.split('.').pop() || file
+}
 </script>
 
 <style scoped lang="stylus">
