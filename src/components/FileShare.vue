@@ -2,6 +2,8 @@
 import { computed, reactive, ref, toRef, watch, watchEffect } from 'vue'
 import { addDays, formatISO } from 'date-fns'
 import VueTagsInput from '@sipec/vue3-tags-input';
+import IconCheckCirleFilled from '~icons/ant-design/check-circle-filled'
+import IconCloseCircleFilled from '~icons/ant-design/close-circle-filled'
 import { useStore as getFileStore, FileGroupParam, BundleFileGroupParam } from '../stores/file'
 import { useStore as getUserStore } from '../stores/user'
 import DropZone from './DropZone.vue'
@@ -18,17 +20,22 @@ const { files, addFiles, removeFile, resetFiles } = useFileList()
 const data = reactive({
 	showModalConfirm: false,
 	showModalResult: false,
+	showModalUploadProgress: false,
+	uploadFileProgresses: {} as {[key: string]: any},
 	downloadURL: null,
 	filteredUserContacts: [] as any[],
 })
 
 const showModalConfirm = toRef(data, 'showModalConfirm')
 const showModalResult = toRef(data, 'showModalResult')
+const showModalUploadProgress = toRef(data, 'showModalUploadProgress')
+const uploadFileProgresses = toRef(data, 'uploadFileProgresses')
 const downloadURL = toRef(data, 'downloadURL')
 const filteredUserContacts = toRef(data, 'filteredUserContacts')
 
 const syncShowModalConfirmClosed = () => showModalConfirm.value = false
 const syncShowModalResultClosed = () => showModalResult.value = false
+const syncShowModalUploadProgressClosed = () => showModalUploadProgress.value = false
 
 const confirmUpload = () => {
 	showModalConfirm.value = true;
@@ -49,6 +56,17 @@ const cZipPassword = ref()
 const downloadPass = ref()
 const cdownloadPass = ref()
 const useProtectedView = ref()
+
+const resetPassphrase = () => {
+	userContacts.value = undefined
+	userContactTags.value = []
+	zipPassword.value = undefined
+	cZipPassword.value = undefined
+	downloadPass.value = undefined
+	cdownloadPass.value = undefined
+	useProtectedView.value = undefined
+}
+
 const submitFileGroupForm = async () => {
 	const MIN_LENGTH_PASS = 6
 
@@ -94,8 +112,20 @@ const submitFileGroupForm = async () => {
 		return
 	}
 
+	showModalConfirm.value = false
+	showModalUploadProgress.value = true
+
 	const { uploadFiles } = createUploader(fileGroupId, '/internal/files/upload')
-	const results = await uploadFiles(files.value)
+
+	for (const f of files.value) {
+		if (!uploadFileProgresses.value[f.file.name]) {
+			uploadFileProgresses.value[f.file.name] = 0
+		}
+	}
+
+	const results = await uploadFiles(files.value, (file, pct: number) => {
+		uploadFileProgresses.value[file.file.name] = pct
+	})
 
 	let allOk = true
 	for (const res of results) {
@@ -115,6 +145,7 @@ const submitFileGroupForm = async () => {
 	}
 
 	const bundle = await fileStore.bundleFileGroup(bundleParams)
+	showModalUploadProgress.value = false
 	if (bundle) {
 		const { downloadUrl, expiredAt } = bundle
 		showModalConfirm.value = false
@@ -125,14 +156,12 @@ const submitFileGroupForm = async () => {
 		return
 	}
 
-	showModalConfirm.value = false
+	resetPassphrase()
 	showModalResult.value = true
 }
 
 let tagDebounce: any
 const watchTagInput = watch(userContacts, (newVal) => {
-	console.log('new search', newVal)
-
 	if (tagDebounce) {
 		clearTimeout(tagDebounce);
 	}
@@ -149,6 +178,15 @@ const watchTagInput = watch(userContacts, (newVal) => {
 			})
 	}, 600);
 })
+
+const copyUrl = () => {
+	const url = downloadURL.value || ''
+    navigator.clipboard.writeText(url).then(() => {
+        // Alert the user that the action took place.
+        // Nobody likes hidden stuff being done under the hood!
+        showPopupInfo('URL Copied!')
+    });
+}
 </script>
 
 <template>
@@ -183,16 +221,36 @@ const watchTagInput = watch(userContacts, (newVal) => {
         </DropZone>
         <div class="flex flex-row justify-between items-center w-full mt-3">
             <router-link :to="{name:'home'}" class="block btn btn-blue">Back</router-link>
-            <button :disabled="files.length <= 0"  @click.prevent="confirmUpload" class="block btn" :class="{'btn-orange': files.length > 0, 'btn-disable': files.length <= 0}">Upload</button>
+            <button :disabled="files.length <= 0"  @click.prevent="confirmUpload" class="block btn" :class="{'btn-orange': files.length > 0, 'btn-disable': files.length <= 0}">Continue</button>
         </div>
     </div>
 	<Modal :show="showModalResult" @on-modal-closed="syncShowModalResultClosed">
-		<div v-if="downloadURL">
-			File Uploaded
-			Download URL: <a :href="downloadURL" target="_blank">{{ downloadURL }}</a>
+		<div  v-if="downloadURL" class="modal-result flex flex-col justify-start items-start">
+			<h1 class="text-lg font-bold mb-3">File Successfully Uploaded</h1>
+			<ul class="flex flex-col justify-start items-start text-sm mb-3">
+				<li class="flex flex-row items-center">
+					<IconCheckCirleFilled v-if="userContactTags.length > 0" class="mr-1 -mt-1 text-green-500"/>
+					<IconCloseCircleFilled v-if="!userContactTags.length" class="mr-1 -mt-1 text-red-500"/>
+					Shared to specific user
+				</li>
+				<li class="flex flex-row items-center">
+					<IconCheckCirleFilled v-if="useProtectedView" class="mr-1 -mt-1 text-green-500"/>
+					<IconCloseCircleFilled v-if="!useProtectedView" class="mr-1 -mt-1 text-red-500"/>
+					Download page is Protected
+				</li>
+				<li class="flex flex-row items-center">
+					<IconCheckCirleFilled class="mr-1 -mt-1 text-green-500"/> File protected by ZIP password
+				</li>
+			</ul>
+			<div class="bg-gray-700 p-3 rounded-md w-full text-white">
+				<p class="text-yellow-300 text-sm font-semibold">
+					<a :href="downloadURL" target="_blank" id="download-url">{{ downloadURL }}</a>
+					<button class="ml-2 bg-pink-500 text-white py-0 px-1 rounded-md active:bg-orange-500" @click="copyUrl">copy</button>
+				</p>
+			</div>
 		</div>
 		<div v-else>
-			Unable to process files
+			<h1 class="text-lg font-bold mb-3">Unable to process files</h1>
 		</div>
 	</Modal>
 	<Modal :show="showModalConfirm" @on-modal-closed="syncShowModalConfirmClosed">
@@ -236,7 +294,7 @@ const watchTagInput = watch(userContacts, (newVal) => {
 				</label>
 				<label class="form-control checkbox">
 					<input type="checkbox" v-model="useProtectedView" />
-					<span class="ml-2">Protect Download Page</span>
+					<span class="ml-2">also protect the <strong>Download Page</strong></span>
 				</label>
 				<div v-if="useProtectedView" class="w-full">
 					<label class="form-control textbox">
@@ -254,6 +312,20 @@ const watchTagInput = watch(userContacts, (newVal) => {
 				</div>
 			</div>
 		</form>
+	</Modal>
+	<Modal :show="showModalUploadProgress" @on-modal-closed="syncShowModalUploadProgressClosed">
+		<h1 class="text-lg font-bold mb-3">Uploading</h1>
+		<ul>
+			<li class="upload-bar" v-for="(prog, key) in uploadFileProgresses" :key="key">
+				<span class="text-xs text-gray-700 font-semibold">{{ key }}</span>
+				<div class="w-full bg-gray-200 rounded-full h-2.5 mb-1 dark:bg-gray-700">
+					<div class="bg-indigo-500 h-2.5 rounded-full dark:bg-indigo-500" :style="`width: ${prog}%`"></div>
+				</div>
+				<div class="text-indigo-600 text-center text-xs font-semibold">
+					<span>{{prog}}%</span>
+				</div>
+			</li>
+		</ul>
 	</Modal>
 </template>
 
@@ -311,5 +383,14 @@ input[type=file]:not(:focus-visible) {
 
 .form-tab-content {
 	@apply w-full;
+}
+
+.modal-result {
+	min-width: 300px;
+}
+
+.upload-bar {
+	@apply relative mb-1;
+	max-width: 400px;
 }
 </style>

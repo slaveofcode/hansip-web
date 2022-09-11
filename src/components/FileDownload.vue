@@ -39,6 +39,12 @@ onBeforeMount(async () => {
                 url: route.fullPath,
             },
         })
+        return
+    }
+
+    if (!res.isAllowed) {
+        showPopupInfo('You\'re not allowed to open this file')
+        return
     }
 
     showModalPrompt.value = res.isProtected
@@ -51,16 +57,17 @@ onBeforeMount(async () => {
 const downloadPass = ref()
 const accountPass = ref()
 const showProtectedFiles = async () => {
-    const res = await fileStore.viewProtectedFiles(code.value, {
+    const { ok, message, files: downloadFiles } = await fileStore.viewProtectedFiles(code.value, {
         pagePassword: downloadPass.value,
         accountPassword: accountPass.value,
     })
-    if (!res) {
-        showPopupInfo('Wrong password, try again.')
+
+    if (!ok) {
+        showPopupInfo(message)
         return
     }
 
-    files.value = res.files
+    files.value = downloadFiles
     showModalPrompt.value = false
 }
 

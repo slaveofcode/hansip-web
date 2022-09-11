@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-export async function uploadFile(fileGroupId: string, path: string, file: any) {
+export async function uploadFile(fileGroupId: string, path: string, file: any, progressFn: (pct: number) => void) {
 	// set up the request data
 	let formData = new FormData()
 	formData.append('fileGroupId', fileGroupId)
@@ -12,7 +12,11 @@ export async function uploadFile(fileGroupId: string, path: string, file: any) {
 	const response = await axios.post(path, formData, {
 		headers: {
 			'Content-Type': 'multipart/form-data',
-		}
+		},
+		onUploadProgress: progressFn,
+		// onUploadProgress: (progressEvent) => {
+		// 	progressFn(Math.round( (progressEvent.loaded * 100) / progressEvent.total))
+		// }
 	})
 
 	// change status to indicate the success of the upload request
@@ -21,17 +25,29 @@ export async function uploadFile(fileGroupId: string, path: string, file: any) {
 	return response
 }
 
-export function uploadFiles(fileGroupId: string, path: string, files: any[]) {
-	return Promise.all(files.map((file) => uploadFile(fileGroupId, path, file)))
+export function uploadFiles(fileGroupId: string, path: string, files: any[], progressFn: (file: any, pcts: number) => void) {
+	const uploads = []
+
+	let i = 0
+	for (const file of files) {
+		uploads.push(
+			uploadFile(fileGroupId, path, file, (progressEvent: any) => {
+				const pct = Math.round( (progressEvent.loaded * 100) / progressEvent.total)
+				progressFn(file, pct)
+			})
+		)
+	}
+
+	return Promise.all(uploads)
 }
 
 export default function createUploader(fileGroupId: string, path: string) {
 	return {
-		uploadFile: function (file: any) {
-			return uploadFile(fileGroupId, path, file)
+		uploadFile: function (file: any, progressFn: (pct: number) => void) {
+			return uploadFile(fileGroupId, path, file, progressFn)
 		},
-		uploadFiles: function (files: any) {
-			return uploadFiles(fileGroupId, path, files)
+		uploadFiles: function (files: any, progressFn: (file: any, pct: number) => void) {
+			return uploadFiles(fileGroupId, path, files, progressFn)
 		},
 	}
 }

@@ -48,17 +48,18 @@ export const useStore = defineStore('file', {
         async viewFiles(code: string): Promise<any | boolean> {
             const res = await axios.get(`/view/${code}`)
             if (res.status === 200) {
-                const { isProtected, isNeedLogin, data } = res.data
+                const { isProtected, isNeedLogin, isAllowed, data } = res.data
                 return {
                     isProtected,
                     isNeedLogin,
+                    isAllowed,
                     files: data.files,
                 }
             }
 
             return false
         },
-        async viewProtectedFiles(code: string, params: DownloadProtectedParam): Promise<any | boolean>  {
+        async viewProtectedFiles(code: string, params: DownloadProtectedParam): Promise<any>  {
             const res = await axios.post(`/view/${code}`, {
                 downloadPassword: params.pagePassword,
                 accountPassword: params.accountPassword
@@ -67,11 +68,15 @@ export const useStore = defineStore('file', {
             if (res.status === 200) {
                 const { data } = res.data
                 return {
+                    ok: true,
                     files: data.files,
                 }
             }
 
-            return false
+            return {
+                ok: false,
+                message: res.data.message
+            }
         },
         async downloadInfo(code: string, password: string): Promise<[boolean, any]> {
             const res = await axios.post(`/download/info/${code}`, {
