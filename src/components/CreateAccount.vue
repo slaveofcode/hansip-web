@@ -2,6 +2,7 @@
 import { ref } from "@vue/reactivity"
 import { useRouter } from 'vue-router'
 import { useStore as getAccountStore } from '../stores/account'
+import { showPopupInfo } from '../lib/popup'
 
 const router = useRouter()
 const accountStore = getAccountStore()
@@ -20,12 +21,12 @@ const passwordNotEqual = () => password.value != cpassword.value
 
 const submitForm = async () => {
     if (!allFieldsFilled()) {
-        alert('All fields are required!')
+        showPopupInfo('All fields are required!')
         return
     }
 
     if (passwordNotEqual()) {
-        alert('Password doesn\'t match with confirmation')
+        showPopupInfo('Password doesn\'t match with confirmation')
         return
     }
 
@@ -42,7 +43,7 @@ const submitForm = async () => {
         return
     }
 
-    alert(msg)
+    showPopupInfo(msg)
 }
 </script>
 

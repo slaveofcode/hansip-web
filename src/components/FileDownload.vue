@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import { reactive, ref, toRef } from '@vue/reactivity'
 import { useRoute, useRouter } from 'vue-router'
+import { onBeforeMount } from '@vue/runtime-core'
 import { useStore as getFileStore } from '../stores/file'
 import { useStore as getAccountStore } from '../stores/account'
 import Modal from '../components/Modal.vue'
-import { onBeforeMount } from '@vue/runtime-core'
+import { showPopupInfo } from '../lib/popup'
 
 const route = useRoute()
 const router = useRouter()
@@ -55,7 +56,7 @@ const showProtectedFiles = async () => {
         accountPassword: accountPass.value,
     })
     if (!res) {
-        alert('Wrong password, try again.')
+        showPopupInfo('Wrong password, try again.')
         return
     }
 

@@ -2,6 +2,7 @@
 import { ref } from "@vue/reactivity";
 import { useRoute, useRouter } from 'vue-router';
 import { useStore as getAccountStore } from '../stores/account'
+import { showPopupInfo } from '../lib/popup'
 
 const accountStore = getAccountStore()
 const route = useRoute()
@@ -17,7 +18,7 @@ const submitForm = async () => {
     })
 
     if (!res) {
-        alert('Failed credential')
+        showPopupInfo('Wrong email or password')
         return
     }
 

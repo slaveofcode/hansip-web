@@ -9,6 +9,7 @@ import FilePreview from './FilePreview.vue'
 import useFileList from '../lib/file/file-list'
 import createUploader from '../lib/file/file-uploader'
 import Modal from '../components/Modal.vue'
+import { showPopupInfo } from '../lib/popup'
 
 const fileStore = getFileStore()
 const userStore = getUserStore()
@@ -52,33 +53,33 @@ const submitFileGroupForm = async () => {
 	const MIN_LENGTH_PASS = 6
 
 	if (['', undefined].includes(zipPassword.value) || ['', undefined].includes(cZipPassword.value)) {
-		alert('ZIP Password cannot be empty')
+		showPopupInfo('ZIP Password cannot be empty')
 		return
 	}
 	
 	if (zipPassword.value != cZipPassword.value) {
-		alert('ZIP Password doesn\'t match')
+		showPopupInfo('ZIP Password doesn\'t match')
 		return
 	}
 
 	if (zipPassword.value.length < MIN_LENGTH_PASS) {
-		alert('Minimum length ZIP password is 6 digit, please change.')
+		showPopupInfo('Minimum length ZIP password is 6 digit, please change.')
 		return
 	}
 
 	if (useProtectedView.value) {
 		if (['', undefined].includes(downloadPass.value) || ['', undefined].includes(cdownloadPass.value)) {
-			alert('Download page password cannot be empty')
+			showPopupInfo('Download page password cannot be empty')
 			return
 		}
 		if (downloadPass.value != cdownloadPass.value) {
-			alert('Download page password doesn\'t match')
+			showPopupInfo('Download page password doesn\'t match')
 			return
 		}
 
 
 		if (downloadPass.value.length < MIN_LENGTH_PASS) {
-			alert('Minimum length download page password is 6 digit, please change.')
+			showPopupInfo('Minimum length download page password is 6 digit, please change.')
 			return
 		}
 	}
@@ -89,7 +90,7 @@ const submitFileGroupForm = async () => {
 
 	const fileGroupId = await fileStore.getFileGroupId(fileGroupParam)
 	if (!fileGroupId) {
-		alert('Unable to continue upload, try again in a moment')
+		showPopupInfo('Unable to continue upload, try again in a moment')
 		return
 	}
 
