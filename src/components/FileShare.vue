@@ -1,17 +1,18 @@
 <script lang="ts" setup>
 import { computed, reactive, ref, toRef, watch, watchEffect } from 'vue'
 import { addDays, formatISO } from 'date-fns'
+// @ts-ignore
 import VueTagsInput from '@sipec/vue3-tags-input';
 import IconCheckCirleFilled from '~icons/ant-design/check-circle-filled'
 import IconCloseCircleFilled from '~icons/ant-design/close-circle-filled'
-import { useStore as getFileStore, FileGroupParam, BundleFileGroupParam } from '../stores/file'
-import { useStore as getUserStore } from '../stores/user'
+import { useStore as getFileStore, FileGroupParam, BundleFileGroupParam } from '@/stores/file'
+import { useStore as getUserStore } from '@/stores/user'
 import DropZone from './DropZone.vue'
 import FilePreview from './FilePreview.vue'
-import useFileList from '../lib/file/file-list'
-import createUploader from '../lib/file/file-uploader'
-import Modal from '../components/Modal.vue'
-import { showPopupInfo } from '../lib/popup'
+import useFileList from '@/lib/file/file-list'
+import createUploader from '@/lib/file/file-uploader'
+import Modal from '@/components/Modal.vue'
+import { showPopupInfo } from '@/lib/popup'
 
 const fileStore = getFileStore()
 const userStore = getUserStore()
@@ -267,7 +268,7 @@ const copyUrl = () => {
 						:tags="userContactTags"
 						:autocomplete-items="filteredUserContacts"
 						:add-only-from-autocomplete="true"
-						@tags-changed="tags => userContactTags = tags"
+						@tags-changed="(tags: any) => userContactTags = tags"
 						placeholder="find user..."
 					/>
 				</label>

@@ -1,15 +1,11 @@
 import { createRouter, createWebHistory, NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
 import { useStore as getAccountStore } from './stores/account'
 
-function loadView(path: string) {
-    return () => import(/* @vite-ignore */path)
-}
-
 const routes = [
     {
         path: '/',
         name: 'home',
-        component: loadView('./components/Home.vue'),
+        component: () => import('./components/Home.vue'),
         meta: {
             auth: false,
         },
@@ -17,7 +13,7 @@ const routes = [
     {
         path: '/register',
         name: 'create-account',
-        component: loadView('./components/CreateAccount.vue'),
+        component: () => import('./components/CreateAccount.vue'),
         meta: {
             auth: false,
         },
@@ -25,7 +21,7 @@ const routes = [
     {
         path: '/login',
         name: 'login-account',
-        component: loadView('./components/LoginAccount.vue'),
+        component: () => import('./components/LoginAccount.vue'),
         meta: {
             auth: false,
         },
@@ -33,7 +29,7 @@ const routes = [
     {
         path: '/file-share',
         name: 'file-share',
-        component: loadView('./components/FileShare.vue'),
+        component: () => import('./components/FileShare.vue'),
         meta: {
             auth: true,
         },
@@ -41,7 +37,7 @@ const routes = [
     {
         path: '/d/:code',
         name:'file-download',
-        component: loadView('./components/FileDownload.vue'),
+        component: () => import('./components/FileDownload.vue'),
         meta: {
             auth: false
         },
@@ -49,7 +45,7 @@ const routes = [
     {
         path: '/error',
         name: 'error',
-        component: loadView('./components/Error.vue'),
+        component: () => import('./components/Error.vue'),
     }
 ]
 

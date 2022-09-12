@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useCookies } from "vue3-cookies";
-import { memoizeRefreshToken } from "../lib/auth/refresh_token";
-import { setToken } from "../lib/auth/token";
+import { memoizeRefreshToken } from "@/lib/auth/refresh_token";
+import { setToken } from "@/lib/auth/token";
 
 const { cookies } = useCookies();
 

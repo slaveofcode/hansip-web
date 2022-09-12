@@ -7,6 +7,7 @@ export default {
 
 
 <script lang="ts" setup>
+// @ts-ignore
 import { VueFinalModal } from 'vue-final-modal'
 
 const emit = defineEmits(['close'])

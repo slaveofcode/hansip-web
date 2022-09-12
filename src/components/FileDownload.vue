@@ -2,10 +2,10 @@
 import { reactive, ref, toRef } from '@vue/reactivity'
 import { useRoute, useRouter } from 'vue-router'
 import { onBeforeMount } from '@vue/runtime-core'
-import { useStore as getFileStore } from '../stores/file'
-import { useStore as getAccountStore } from '../stores/account'
-import Modal from '../components/Modal.vue'
-import { showPopupInfo } from '../lib/popup'
+import { useStore as getFileStore } from '@/stores/file'
+import { useStore as getAccountStore } from '@/stores/account'
+import Modal from '@/components/Modal.vue'
+import { showPopupInfo } from '@/lib/popup'
 
 const route = useRoute()
 const router = useRouter()
@@ -84,7 +84,7 @@ const fetchFiles = async () => {
         <h1 class="text-3xl mb-3">Download the Files</h1>
         <div class="file-list w-full bg-gray-800 flex flex-col justify-center items-start overflow-y-auto">
             <ul class="flex flex-col justify-start items-start">
-                <li class="mb-2" v-for="file in files" :key="file.fileId">
+                <li class="mb-2" v-for="file in (files as any[])" :key="file.fileId">
                     <span class="text-green-500 font-bold">></span>
                     <span class="ml-1">{{file.fileName}}</span>
                 </li>

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore as getAccountStore } from '../stores/account'
+import { useStore as getAccountStore } from '@/stores/account'
 
 
 const router = useRouter()

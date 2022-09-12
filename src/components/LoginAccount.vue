@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { ref } from "@vue/reactivity";
 import { useRoute, useRouter } from 'vue-router';
-import { useStore as getAccountStore } from '../stores/account'
-import { showPopupInfo } from '../lib/popup'
+import { useStore as getAccountStore } from '@/stores/account'
+import { showPopupInfo } from '@/lib/popup'
 
 const accountStore = getAccountStore()
 const route = useRoute()

@@ -15,11 +15,11 @@ function setInactive() {
 		active.value = false
 	}, 50)
 }
-function onDrop(e) {
+function onDrop(e: any) {
 	setInactive()
 	emit('files-dropped', [...e.dataTransfer.files])
 }
-function preventDefaults(e) {
+function preventDefaults(e: any) {
 	e.preventDefault()
 }
 const events = ['dragenter', 'dragover', 'dragleave', 'drop']
