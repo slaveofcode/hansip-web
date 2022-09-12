@@ -24,6 +24,7 @@ const data = reactive({
 const code = toRef(data, 'code')
 const files = toRef(data, 'files')
 const showModalPrompt = ref(false)
+const needDownloadPassword = ref(false)
 const needLoginPassword = ref(false)
 
 onBeforeMount(async () => {
@@ -47,9 +48,10 @@ onBeforeMount(async () => {
         return
     }
 
-    showModalPrompt.value = res.isProtected
+    showModalPrompt.value = res.isProtected || res.isNeedLogin
+    needDownloadPassword.value = res.isProtected
     needLoginPassword.value = res.isNeedLogin
-    if (!res.isProtected) {
+    if (!res.isProtected && !res.isNeedLogin) {
         files.value = res.files
     }
 })
@@ -96,11 +98,11 @@ const fetchFiles = async () => {
     </div>
     <Modal :show="showModalPrompt" :no-close-button="true">
 		<form @submit.prevent="showProtectedFiles" class="flex flex-col justify-start items-start mt-3">
-			<label class="form-control textbox">
+			<label v-if="needDownloadPassword" class="form-control textbox">
                 <span>Download Page Password</span>
                 <input type="password" v-model="downloadPass"/>
             </label>
-            <label class="form-control textbox">
+            <label v-if="needLoginPassword" class="form-control textbox">
                 <span>Your Account Password</span>
                 <input type="password" v-model="accountPass"/>
             </label>
