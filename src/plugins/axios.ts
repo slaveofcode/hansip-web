@@ -6,7 +6,7 @@ import { setToken } from "@/lib/auth/token";
 const { cookies } = useCookies();
 
 axios.defaults.baseURL = "http://localhost:8080"; // TODO: change on prod
-axios.defaults.validateStatus = (status) => status != 401;
+axios.defaults.validateStatus = (status) => [401, 403].includes(status);
 
 axios.interceptors.request.use(
   async (config) => {
