@@ -13,7 +13,7 @@ const fileStore = getFileStore()
 const accountStore = getAccountStore()
 
 if (!accountStore.isAuthenticated) {
-    accountStore.validateAuth()
+    accountStore.validateAuth().catch()
 }
 
 const data = reactive({

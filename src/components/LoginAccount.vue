@@ -22,7 +22,12 @@ const submitForm = async () => {
         return
     }
 
-    await accountStore.validateAuth()
+    try {
+        await accountStore.validateAuth()
+    } catch (err) {
+        
+    }
+    
 
     if (route.query.url) {
         router.push({
