@@ -6,7 +6,7 @@ import { setToken } from "@/lib/auth/token";
 const { cookies } = useCookies();
 
 axios.defaults.baseURL = "http://localhost:8080"; // TODO: change on prod
-axios.defaults.validateStatus = (status) => [401, 403].includes(status);
+axios.defaults.validateStatus = (status) => true; // disable all error throw from status code
 
 axios.interceptors.request.use(
   async (config) => {
@@ -35,18 +35,28 @@ axios.interceptors.response.use(
         return Promise.reject(error)
       }
 
-      config.sent = true;
-      const newAccessToken = await memoizeRefreshToken(refreshToken);
+      try {
+        config.sent = true;
+        console.log('start refresh token:')
+        const newAccessToken = await memoizeRefreshToken(refreshToken);
 
-      if (newAccessToken) {
-        config.headers = {
-          ...config.headers,
-          authorization: `Bearer ${newAccessToken}`,
-        };
+        if (newAccessToken) {
+          config.headers = {
+            ...config.headers,
+            authorization: `Bearer ${newAccessToken}`,
+          };
+
+          return axios(config);
+        }
+      } catch (err) {
+        console.log('Error refresh token:', err)
       }
 
-      return axios(config);
+      cookies.remove('access_token');
+      cookies.remove('refresh_token');
     }
+
+    console.log('abc')
     
     return Promise.reject(error);
   }
