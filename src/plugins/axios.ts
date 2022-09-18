@@ -5,7 +5,36 @@ import { setToken } from "@/lib/auth/token";
 
 const { cookies } = useCookies();
 
-axios.defaults.baseURL = "http://localhost:8080"; // TODO: change on prod
+let serverConfig: { baseURL: string } | null = null;
+let httpConfig: { baseURL: string } = {
+  baseURL: 'http://localhost:8080',
+};
+
+const parseServerConfig = async () => {
+  if (!serverConfig) {
+    try {
+      const { status, data } = await axios.get('/server.json', {
+        baseURL: '/',
+      })
+  
+      if (status === 200) {
+        serverConfig = data;
+      }
+    } catch (err) {
+      console.error('Unable to load server config url')
+    }
+  }
+
+  const config = {
+    ...httpConfig,
+    ...serverConfig
+  }
+
+  axios.defaults.baseURL = config?.baseURL;
+}
+
+parseServerConfig();
+
 axios.defaults.validateStatus = (status) => true; // disable all error throw from status code
 
 axios.interceptors.request.use(
