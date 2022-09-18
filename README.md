@@ -1,4 +1,6 @@
-# Hansip Web 
+# Hansip Web
+
+Web SPA for [Hansip](https://github.com/slaveofcode/hansip)
 
 ## Tech Stack
 - NodeJs 16 or newer
