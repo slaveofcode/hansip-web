@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory, NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
+import { createRouter, createWebHistory, NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
 import { useStore as getAccountStore } from './stores/account'
 
 const routes = [
@@ -46,11 +46,16 @@ const routes = [
         path: '/error',
         name: 'error',
         component: () => import('./components/Error.vue'),
+    },
+    {
+        path: '/:pathMatch(.*)*',
+        name: '404',
+        component: () => import('./components/Error404.vue'),
     }
 ]
 
 const router = createRouter({
-    history: createWebHashHistory(),
+    history: createWebHistory(),
     routes,
 })
 
