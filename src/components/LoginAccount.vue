@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { watch } from 'vue'
 import { ref } from "@vue/reactivity";
 import { useRoute, useRouter } from 'vue-router';
 import { useStore as getAccountStore } from '@/stores/account'
@@ -10,6 +11,12 @@ const router = useRouter()
 
 const email = ref()
 const password = ref();
+
+watch(email, (newVal) => {
+    if (newVal != "" && typeof newVal === 'string') {
+        email.value = newVal.toLowerCase()
+    }
+})
 
 const submitForm = async () => {
     const res = await accountStore.login({

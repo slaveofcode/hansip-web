@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { watch } from 'vue'
 import { ref } from "@vue/reactivity"
 import { useRouter } from 'vue-router'
 import { useStore as getAccountStore } from '@/stores/account'
@@ -12,6 +13,18 @@ const alias = ref()
 const email = ref()
 const password = ref();
 const cpassword = ref();
+
+watch(alias, (newVal) => {
+    if (newVal != "" && typeof newVal === 'string') {
+        alias.value = newVal.toLowerCase()
+    }
+})
+
+watch(email, (newVal) => {
+    if (newVal != "" && typeof newVal === 'string') {
+        email.value = newVal.toLowerCase()
+    }
+})
 
 const allFieldsFilled = () => {
     return !!name.value && !!alias.value && !!email.value && !!password.value && !!cpassword.value
@@ -58,6 +71,7 @@ const submitForm = async () => {
         <label class="form-control textbox">
             <span>My Alias</span>
             <input type="alias" v-model="alias"/>
+            <p class="text-sm mt-1 text-gray-200">* alias input will be lowercased</p>
         </label>
         <div class="block border-0 border-b border-indigo-500 w-full my-3"></div>
         <label class="form-control textbox">
